@@ -1,3 +1,4 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useState } from 'react';
 import { 
   Container, 
@@ -7,14 +8,43 @@ import {
   Card, 
   Carousel, 
   Form, 
-  Modal 
+  Modal,
+  Alert 
 } from 'react-bootstrap';
+import { send } from '@emailjs/browser'; 
 
 function App() {
   const [show, setShow] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const templateParams = {
+      from_name: event.target.formBasicName.value,
+      from_email: event.target.formBasicEmail.value,
+      message: event.target.formBasicMessage.value,
+      to_email: 'info@autosfcm.com' 
+    };
+
+    send(
+      'YOUR_SERVICE_ID', 
+      'YOUR_TEMPLATE_ID', 
+      templateParams, 
+      'YOUR_USER_ID'
+    )
+    .then((response) => {
+      console.log('Correo electrónico enviado con éxito!', response.status, response.text);
+      setShowAlert(true);
+      event.target.reset();
+    })
+    .catch((err) => {
+      console.error('Error al enviar el correo electrónico:', err);
+    });
+  };
 
   return (
     <div>
@@ -130,7 +160,7 @@ function App() {
       {/* Contacto */}
       <Container className="py-5">
         <h2 className="text-center mb-4">Contáctanos</h2>
-        <Form>
+        <Form onSubmit={handleSubmit}>
           <Row>
             <Col md={6}>
               <Form.Group controlId="formBasicName">
@@ -153,6 +183,10 @@ function App() {
             Enviar
           </Button>
         </Form>
+        <Alert show={showAlert} variant="success" onClose={() => setShowAlert(false)} dismissible>
+          <Alert.Heading>¡Mensaje enviado!</Alert.Heading>
+          <p>Gracias por contactarnos, te responderemos a la brevedad.</p>
+        </Alert>
       </Container>
     </div>
   );
